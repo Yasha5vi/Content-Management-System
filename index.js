@@ -355,8 +355,8 @@ app.post("/sendinfo",(req,res)=>{
     const {name,email,message} = req.body;
     // console.log(email);
     // console.log(message);
-    const token = "6791340636:AAH6-alxaDryuy0pJo71WGlAHNay6O9X4WQ";
-    const chatid = 5421121605;
+    const token = "xxxxxxxxxxxxxxxxxxxx";
+    const chatid = 123456789;
     const bot = new TelegramBot(token, { polling: true });
     const telegramMessage = `
         New Contact Form Submission:
