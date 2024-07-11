@@ -2,16 +2,18 @@ import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
 import TelegramBot from "node-telegram-bot-api";
+import bcrypt from "bcrypt";
 
 const port = 3000;
 const app = express();
+const saltrounds = 10;
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static("public"));
 
 const db = new pg.Client({
     user:"postgres",
-    password:"",
+    password:"friday123",
     host:"localhost",
     port:5432,
     database:"CMS"
@@ -38,35 +40,52 @@ let username="yashasvi03";
 app.post("/login",async(req,res)=>{
     // console.log(req.body);
     try{
-        const result = await db.query("SELECT * FROM login WHERE email = $1 AND pwd= $2",
-            [req.body.email,req.body.password]);
-        if(result.rows.length === 0){
+        const result = await db.query("SELECT * FROM login WHERE email = $1",
+            [req.body.email]
+        );
+        if(result.rows.length > 0){
+            const storedHash = result.rows[0].pwd;
+
+            bcrypt.compare(req.body.password,storedHash,async(err,allowed)=>{
+                if(err){
+                    console.log(err);
+                }else{
+                    if(allowed){
+                        username = result.rows[0].username;
+                        const sitedata = await db.query("SELECT * FROM sites WHERE username = $1",
+                            [username]
+                        );
+                        // console.log(sitedata.rows);
+                        let info;
+                        if(sitedata.rows.length>0){
+                            info=sitedata.rows;
+                        }
+                        // console.log(username);
+                        // console.log(info);
+                        //login pe agr last session me posts me kuch data rhe gya ho tho
+                        await db.query("DELETE FROM posts WHERE username = $1;",
+                            [username]
+                        );
+                        res.render("index.ejs",{
+                            data:"partials/dashboard",
+                            heading:"Dashboard",
+                            user:username,
+                            sites:info
+                        }); 
+                    }else{
+                        loginvar="Login";
+                        res.render("partials/login.ejs",{
+                            message:"Incorrect password",
+                            data:loginvar
+                        });
+                    }
+                }
+            });   
+        }else{
             loginvar="Login";
             res.render("partials/login.ejs",{
                 message:"User not found Please register",
                 data:loginvar
-            });
-        }else{
-            username = result.rows[0].username;
-            const sitedata = await db.query("SELECT * FROM sites WHERE username = $1",
-                [username]
-            );
-            // console.log(sitedata.rows);
-            let info;
-            if(sitedata.rows.length>0){
-                info=sitedata.rows;
-            }
-            // console.log(username);
-            // console.log(info);
-            //login pe agr last session me posts me kuch data rhe gya ho tho
-            await db.query("DELETE FROM posts WHERE username = $1;",
-                [username]
-            );
-            res.render("index.ejs",{
-                data:"partials/dashboard",
-                heading:"Dashboard",
-                user:username,
-                sites:info
             });
         }
     }catch(err){
@@ -77,22 +96,35 @@ app.post("/login",async(req,res)=>{
 app.post("/register",async(req,res)=>{
     // console.log(req.body);
     try{
-        await db.query("INSERT INTO login (username,email,pwd) VALUES ($1,$2,$3);",
-            [req.body.username,req.body.email,req.body.password]
+        const result = await db.query("SELECT * FROM login WHERE email = $1;",
+            [req.body.email]
         );
-        const msg = "Registered please login";
-        loginvar = "Login";
-        res.render("partials/login.ejs",{
-            data:loginvar,
-            message:msg
-        });
+        // console.log(result.rows);
+        if(result.rows.length > 0){
+            loginvar="Login";
+            res.render("partials/login.ejs",{
+                data:loginvar,
+                message:"User already exists please Login"
+            });
+        }else{
+            bcrypt.hash(req.body.password,saltrounds,async(err,hash)=>{
+                if(err){
+                    console.log(err);
+                }else{
+                    await db.query("INSERT INTO login (username,email,pwd) VALUES ($1,$2,$3);",
+                        [req.body.username,req.body.email,hash]
+                    );
+                    const msg = "Registered please login";
+                    loginvar = "Login";
+                    res.render("partials/login.ejs",{
+                        data:loginvar,
+                        message:msg
+                    });
+                }
+            });    
+        }
     }catch(err){
-        console.log(err.detail);
-        loginvar="Login";
-        res.render("partials/login.ejs",{
-            data:loginvar,
-            message:"User already exists please Login"
-        })
+        console.log(err);
     }
 });
 
@@ -323,8 +355,8 @@ app.post("/sendinfo",(req,res)=>{
     const {name,email,message} = req.body;
     // console.log(email);
     // console.log(message);
-    const token = "";
-    const chatid = "123456789";
+    const token = "6791340636:AAH6-alxaDryuy0pJo71WGlAHNay6O9X4WQ";
+    const chatid = 5421121605;
     const bot = new TelegramBot(token, { polling: true });
     const telegramMessage = `
         New Contact Form Submission:
