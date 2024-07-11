@@ -1,0 +1,18 @@
+<div class="contact">
+    <div class="contactform" style="width: 30rem;">
+        <form action="/sendinfo" method="post">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control mb-3" id="name" name="name" placeholder="Your Name" >
+
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" class="form-control mb-3" id="email"name="email" placeholder="name@example.com" >
+            
+            <label for="message" class="form-label">Message</label>
+            <textarea class="form-control" id="message" name="message" rows="8" placeholder="Enter your message"></textarea>
+            <%if(locals.retext){%>
+                <p class="mt-2"><%=retext%></p>
+            <%}%>
+            <button class="btn btn-primary mt-4" type="submit">Send Message</button>
+        </form>  
+    </div>      
+</div>

@@ -1,0 +1,274 @@
+body{
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    font-family: "Nunito Sans", sans-serif;
+}
+.panel{
+    height: 100vh;
+    width:25%;
+    background-color: #4f46e5;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    position:fixed;
+    overflow-y: auto;
+    /* display: static; */
+}
+.main{
+    height: 100vh;
+    width:100%;
+    margin-left: 25%;
+}
+.svg{
+    width:18%;
+    height:12%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.item{
+    text-decoration: none;
+    color: white;
+    background-color: #697cd3a2;
+    width: 90%;
+    height: 50px;
+    margin-bottom: 5px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+p{
+    height:4vh;
+}
+.cardpara{
+    color: black;
+    margin-bottom: 40px;
+}
+.content{
+    /* height:92%; */
+    width: 100%;
+    padding: 3%;
+    min-height: 100vh;
+}
+.postcard{
+    display: flex;
+    justify-content: center;
+}
+.cardpost{
+    width: 80%;
+    border:1px solid #808080;
+    border-radius: 20px;
+    margin: 20px;
+    padding:20px;
+    background-image: url("../images/subtle-prism.png");
+    font-size: 1.1em;
+}
+.dash{
+    /* border:1px solid #808080; */
+    border-radius: 20px;
+    margin-bottom: 50px;
+    /* height: 100%; */
+
+}
+.editdelete{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items:center;
+}
+.edel{
+    width:80%;
+    margin:10px;
+}
+.contact{
+    /* width: 100%; */
+    min-height: 100vh;
+}
+.temp{
+    padding:5%;
+    /* background-image: url("../images/pattern-randomized.png"); */
+    background-image: repeat;
+    min-height: 100vh;
+}
+.temphead{
+    margin-bottom: 50px;
+}
+img{
+    overflow: hidden;
+    object-fit: contain;
+}
+.tempcard{
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.empty{
+    border:1px dashed #4f46e5;
+    border-radius: 20px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.contain{
+    margin-left: 7%;
+    margin-top: 2%;
+    padding-left: 5%;
+    padding-right: 5%;
+    padding-top: 2%;
+    padding-bottom:2% ;
+    /* border:1px dashed #808080; */
+    width: 50%;
+    border-radius: 20px;
+}
+.form{
+    display: flex;
+    flex-direction: column; 
+}
+#title{
+    height:50px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    padding-left:10px;
+}
+#para{
+    height: 200px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    display:flex;
+    align-items: start;
+    justify-content: start;
+    padding-left: 10px;
+    padding-top: 10px;
+}
+#author{
+    height:50px;
+    border-radius: 10px;
+    margin-bottom: 40px;
+    padding-left: 10px;
+}
+.formbutton{
+    height:50px;
+}
+.login{
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+    display: flex;
+    background-image: url("../images/pattern-randomized.png");
+}
+.loginleft{
+    width: 40%;
+    /* background-color: #4f46e5; */
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+    columns: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction:column;
+    background-image: url("../images/quantum-gradient.png");
+    background-size: cover;
+}
+.loginright{
+    width: 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+}
+.loginform{
+    border: 1px solid #808080;
+    padding:5%;
+    border-radius: 20px;
+    width: 40%;
+    background-color: white;
+    
+}
+.formlogin{
+    display: flex;
+    flex-direction: column;
+}
+.neeche{
+    display: flex;
+    justify-content: space-evenly;
+}
+.loginbutton{
+    width: 50;
+    background: linear-gradient(300deg,#8A2BE2, #4169E1, #00CED1 );
+    background-size: 180% 180%;
+    animation: gradient-animation 18s ease infinite;
+}
+
+/* #8A2BE2, #4169E1, #00CED1  */
+.grad{
+    background: linear-gradient(300deg,#00CED1,#712be2,#4169E1 );
+    background-size: 180% 180%;
+    animation: gradient-animation 18s ease infinite;
+}
+#username{
+    height: 50px;
+    padding-left: 10px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+.loginheading{
+    color: white;
+}
+.register{
+    margin-top: 50px;
+    background-color: aliceblue;
+    color:black;
+    width: 150px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border:none
+}
+.about{
+    background-image: url("../images/pattern-randomized.png");
+    /* background-repeat: repeat; */
+    /* background-size: contain;
+    /* width: 75%; */
+    background-size: auto;
+    min-height: 100vh;
+    padding:5%;
+    padding-right: 15%;
+}
+.parabout{
+    margin-bottom: 20px;
+    height: auto;
+    font-size:1.2em;
+    text-align: justify;
+}
+.box{
+    align-items: center;
+}
+.mesg{
+    margin:0;
+    margin-right:20px;
+    height:100%;
+}
+.container{
+    padding:3%
+}
+.dashcard{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.dashbtn{
+    width:100%;
+}
+.dashimg{
+    border-radius: 10px;
+    height: 100%;
+    width: 100%;
+}
+.contact{
+    padding-left: 10%;
+    padding-top:5%;
+}

@@ -1,0 +1,20 @@
+<div class="content">
+    <h2>Welcome <%=user%></h2> 
+    <div class="container">
+        <%if(locals.sites){%>
+            <%sites.forEach((site)=>{%>
+                <div class="card p-3 my-5 dashcard" style="width: 25rem;">
+                    <img src="images/repeating-triangles.png" class="dashimg" alt="...">
+                    <div class="card-body ">
+                        <form action="/dashupdate" method="post">
+                            <button class="btn btn-primary mt-2 dashbtn" name="edit" value="<%=site.siteid%>" type="submit">Edit</button>
+                            <button class="btn btn-primary mt-2 dashbtn" name="delete" value="<%=site.siteid%>" type="submit">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            <%});%>
+        <%}else{%>
+            <p>You have no sites</p>
+        <%}%>
+    </div>
+</div>

@@ -1,0 +1,23 @@
+<div class="content">
+    <div class="contain">
+        <form action="/insert" class="form" method="post">
+            <%if(locals.content){%>
+                <label for="title">Add a Title</label>
+                <input type="text" id="title" name="title" value="<%=content.title%>">
+                <label for="para">Add the content</label>
+                <textarea type="text" id="para" name="para"><%=content.para%></textarea>
+                <label for="author">Add the author</label>
+                <input type="text" id="author" name="author" value="<%=content.author%>">
+                <button class="btn btn-primary formbutton" name="postSource" value="<%=content.id%>" type="submit">Save</button>
+            <%}else{%>
+                <label for="title">Add a Title</label>
+                <input type="text" id="title" name="title">
+                <label for="para">Add the content</label>
+                <textarea type="text" id="para" name="para"></textarea>
+                <label for="author">Add the author</label>
+                <input type="text" id="author" name="author">
+                <button class="btn btn-primary formbutton" name="postSource" value="add" type="submit" >Add</button>
+            <%}%>
+        </form>
+    </div>
+</div>
