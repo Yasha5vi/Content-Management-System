@@ -1,5 +1,5 @@
-body{
-    height: 100dvh;
-    width: 100dvw;
-    background-color: blue;
+.postcms{
+    background-image: url("../images/subtle-prism.png");
+    background-size: cover;
+    border-radius: 10px;
 }

@@ -39,7 +39,7 @@ const db = new pg.Client({
 db.connect();
 
 let loginvar;
-let user_name="";
+let user_name = "";
 let regtext = "";
 
 app.get("/",(req,res)=>{
@@ -60,78 +60,124 @@ app.get("/register",(req,res)=>{
 });
 
 app.get("/dashboard",async(req,res)=>{
-    try{
-        const result = await db.query("SELECT * FROM sites WHERE username = $1",
-            [user_name]
-        );
-        // console.log(result.rows);
-        let info;
-        if(result.rows.length>0){
-            info=result.rows;
+    if(req.isAuthenticated()){
+        try{
+            const result = await db.query("SELECT * FROM sites WHERE username = $1",
+                [user_name]
+            );
+            // console.log(result.rows);
+            let info;
+            if(result.rows.length>0){
+                info=result.rows;
+            }
+            console.log(info);
+            res.render("index.ejs",{
+                data:"partials/dashboard",
+                heading:"Dashboard",
+                user:user_name,
+                sites:info
+            });
+        }catch(err){
+            console.log(err);
         }
-        // console.log(data);
-        res.render("index.ejs",{
-            data:"partials/dashboard",
-            heading:"Dashboard",
-            user:user_name,
-            sites:info
-        });
-    }catch(err){
-        console.log(err);
+    }else{
+        res.redirect("/");
     }
 });
+
 app.get("/template",(req,res)=>{
-    res.render("index.ejs",{
-        data:"partials/template",
-        heading:"Template",
-        user:user_name
-    });
+    if(req.isAuthenticated()){
+        res.render("index.ejs",{
+            data:"partials/template",
+            heading:"Template",
+            user:user_name
+        });
+    }else{
+        res.redirect("/");
+    }
 });
+
 app.get("/contact",(req,res)=>{
-    res.render("index.ejs",{
-        data:"partials/contact",
-        heading:"Contact Us",
-        user:user_name
-    });
+    if(req.isAuthenticated()){
+        res.render("index.ejs",{
+            data:"partials/contact",
+            heading:"Contact Us",
+            user:user_name
+        });
+    }else{
+        res.redirect("/");
+    }
 });
+
 app.get("/about",(req,res)=>{
-    res.render("index.ejs",{
-        data:"partials/about",
-        heading:"About",
-        user:user_name
-    });
+    if(req.isAuthenticated()){
+        res.render("index.ejs",{
+            data:"partials/about",
+            heading:"About",
+            user:user_name
+        });
+    }else{
+        res.redirect("/");
+    }
 });
 
 let posts;
 app.get("/blog",async(req,res)=>{
-    try{
-        const result = await db.query("SELECT * FROM posts WHERE username = $1 ORDER BY id ASC;",
-            [user_name]
-        );
-        // console.log(result.rows);
-        if(result.rows.length > 0){
-            posts = true;
-        }else{
-            posts = false;
+    if(req.isAuthenticated()){
+        try{
+            const result = await db.query("SELECT * FROM posts WHERE username = $1 ORDER BY id ASC;",
+                [user_name]
+            );
+            // console.log(result.rows);
+            if(result.rows.length > 0){
+                posts = true;
+            }else{
+                posts = false;
+            }
+            res.render("index.ejs",{
+                data:"templates/blog",
+                heading:"Create Your Blog",
+                posts:posts,
+                dbdata:result.rows,
+                user:user_name
+            });
+        }catch(err){
+            console.log(err);
         }
-        res.render("index.ejs",{
-            data:"templates/blog",
-            heading:"Create Your Blog",
-            posts:posts,
-            dbdata:result.rows,
-            user:user_name
-        });
-    }catch(err){
-        console.log(err);
+    }else{
+        res.redirect("/");
     }
 });
 
-app.get("/post",(reqs,res)=>{
-    res.render("index.ejs",{
-        data:"templates/post",
-        heading:"Add a Post",
-        user:user_name
-    });
+app.get("/post",(req,res)=>{
+    if(req.isAuthenticated()){
+        res.render("index.ejs",{
+            data:"templates/post",
+            heading:"Add a Post",
+            user:user_name
+        });
+    }else{
+        res.redirect("/");
+    }
+});
+
+app.get("/:u_name/:sId",async(req,res)=>{
+    const {u_name,sId} = req.params;
+    try{
+        const info = await db.query("SELECT * FROM sitedata WHERE siteid = $1",
+            [sId]
+        );
+        // console.log(info.rows);
+        if(info.rows.length > 0){
+            res.render("templates/final.ejs",{
+                data:info.rows
+            });
+        }else{
+            res.status(404);
+        }
+    }catch(err){
+        console.log(err);
+    }
 });
 
 app.post(
@@ -312,13 +358,17 @@ app.post("/host",async(req,res)=>{
             );
             res.redirect("/dashboard");
         }else{
-            res.render("index.ejs",{
-                data:"templates/blog",
-                heading:"Create Your Blog",
-                posts:posts,
-                user:user_name,
-                mesg:"Nothing to host"
-            });
+            if(req.isAuthenticated()){
+                res.render("index.ejs",{
+                    data:"templates/blog",
+                    heading:"Create Your Blog",
+                    posts:posts,
+                    user:user_name,
+                    mesg:"Nothing to host"
+                });
+            }else{
+                res.redirect("/");
+            }
         }
     }catch(err){
         console.log(err);
