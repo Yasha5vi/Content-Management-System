@@ -3,95 +3,190 @@ import bodyParser from "body-parser";
 import pg from "pg";
 import TelegramBot from "node-telegram-bot-api";
 import bcrypt from "bcrypt";
+import session from "express-session";
+import passport from "passport";
+import env from "dotenv";
+import GoogleStrategy from "passport-google-oauth2";
+import { Strategy } from "passport-local";
 
 const port = 3000;
 const app = express();
 const saltrounds = 10;
+env.config();
+
+app.use(
+    session({
+        secret:process.env.CMSsct,
+        resave:false,
+        saveUninitialized:true
+    })
+);
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static("public"));
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 const db = new pg.Client({
-    user:"postgres",
-    password:"friday123",
-    host:"localhost",
-    port:5432,
-    database:"CMS"
+    user:process.env.PGuser,
+    password:process.env.PGpwd,
+    host:process.env.PGhost,
+    port:process.env.PGport,
+    database:process.env.PGdb
 });
 
 db.connect();
 
 let loginvar;
+let user_name="";
+let regtext = "";
 
 app.get("/",(req,res)=>{
     loginvar = "Login";
+    const msg = regtext;
+    regtext = "";
     res.render("partials/login.ejs",{
         data:loginvar,
+        message:msg,
     });
 });
 
 app.get("/register",(req,res)=>{
     loginvar = "Register";
     res.render("partials/login.ejs",{
-        data:loginvar
+        data:loginvar,
     });
 });
-let username="yashasvi03";
-app.post("/login",async(req,res)=>{
-    // console.log(req.body);
-    try{
-        const result = await db.query("SELECT * FROM login WHERE email = $1",
-            [req.body.email]
-        );
-        if(result.rows.length > 0){
-            const storedHash = result.rows[0].pwd;
 
-            bcrypt.compare(req.body.password,storedHash,async(err,allowed)=>{
-                if(err){
-                    console.log(err);
-                }else{
-                    if(allowed){
-                        username = result.rows[0].username;
-                        const sitedata = await db.query("SELECT * FROM sites WHERE username = $1",
-                            [username]
-                        );
-                        // console.log(sitedata.rows);
-                        let info;
-                        if(sitedata.rows.length>0){
-                            info=sitedata.rows;
-                        }
-                        // console.log(username);
-                        // console.log(info);
-                        //login pe agr last session me posts me kuch data rhe gya ho tho
-                        await db.query("DELETE FROM posts WHERE username = $1;",
-                            [username]
-                        );
-                        res.render("index.ejs",{
-                            data:"partials/dashboard",
-                            heading:"Dashboard",
-                            user:username,
-                            sites:info
-                        }); 
-                    }else{
-                        loginvar="Login";
-                        res.render("partials/login.ejs",{
-                            message:"Incorrect password",
-                            data:loginvar
-                        });
-                    }
-                }
-            });   
-        }else{
-            loginvar="Login";
-            res.render("partials/login.ejs",{
-                message:"User not found Please register",
-                data:loginvar
-            });
+app.get("/dashboard",async(req,res)=>{
+    try{
+        const result = await db.query("SELECT * FROM sites WHERE username = $1",
+            [user_name]
+        );
+        // console.log(result.rows);
+        let info;
+        if(result.rows.length>0){
+            info=result.rows;
         }
+        // console.log(data);
+        res.render("index.ejs",{
+            data:"partials/dashboard",
+            heading:"Dashboard",
+            user:user_name,
+            sites:info
+        });
     }catch(err){
         console.log(err);
     }
 });
+app.get("/template",(req,res)=>{
+    res.render("index.ejs",{
+        data:"partials/template",
+        heading:"Template",
+        user:user_name
+    });
+});
+app.get("/contact",(req,res)=>{
+    res.render("index.ejs",{
+        data:"partials/contact",
+        heading:"Contact Us",
+        user:user_name
+    });
+});
+app.get("/about",(req,res)=>{
+    res.render("index.ejs",{
+        data:"partials/about",
+        heading:"About",
+        user:user_name
+    });
+});
+
+let posts;
+app.get("/blog",async(req,res)=>{
+    try{
+        const result = await db.query("SELECT * FROM posts WHERE username = $1 ORDER BY id ASC;",
+            [user_name]
+        );
+        // console.log(result.rows);
+        if(result.rows.length > 0){
+            posts = true;
+        }else{
+            posts = false;
+        }
+        res.render("index.ejs",{
+            data:"templates/blog",
+            heading:"Create Your Blog",
+            posts:posts,
+            dbdata:result.rows,
+            user:user_name
+        });
+    }catch(err){
+        console.log(err);
+    }
+});
+
+app.get("/post",(reqs,res)=>{
+    res.render("index.ejs",{
+        data:"templates/post",
+        heading:"Add a Post",
+        user:user_name
+    });
+});
+
+app.post(
+    "/login",
+    passport.authenticate("local",{
+    // console.log(req.body);
+        successRedirect:"/dashboard",
+        failureRedirect:"/"
+    })
+);
+
+passport.use(
+    "local",
+    new Strategy(async function verify(username,password,cb){
+        try{
+            // console.log("here");
+            const result = await db.query("SELECT * FROM login WHERE email = $1",
+                [username]
+            );//this username is actually email from the form 
+            
+            if(result.rows.length > 0){
+                const user = result.rows[0];
+                const storedHash = user.pwd;
+    
+                bcrypt.compare(password,storedHash,async(err,valid)=>{
+                    if(err){
+                        // console.log("error");
+                        return cb(err);
+                    }else{
+                        if(valid){
+                            user_name = user.username;
+                            //login pe agr last session me posts 
+                            //me kuch data rhe gya ho tho 
+                            console.log(user_name);
+                            await db.query("DELETE FROM posts WHERE username = $1;",
+                                [user_name]
+                            );
+                            // console.log("here");
+                            return cb(null,user);
+                        }else{
+                            // console.log("false case");
+                            regtext="Incorrect Password";
+                            return cb(null,false);
+                        }
+                    }
+                });   
+            }else{
+                regtext="User not found please register";
+                return cb(null,false);
+            }
+        }catch(err){
+            console.log(err);
+        }
+    })
+);
 
 app.post("/register",async(req,res)=>{
     // console.log(req.body);
@@ -128,85 +223,6 @@ app.post("/register",async(req,res)=>{
     }
 });
 
-app.get("/dashboard",async(req,res)=>{
-    try{
-        const result = await db.query("SELECT * FROM sites");
-        // console.log(result.rows);
-        let data;
-        if(result.rows.length>0){
-            data=result.rows;
-        }
-        // console.log(data);
-        res.render("index.ejs",{
-            data:"partials/dashboard",
-            heading:"Dashboard",
-            user:username,
-            sites:data
-        });
-    }catch(err){
-        console.log(err);
-    }
-});
-app.get("/template",(req,res)=>{
-    res.render("index.ejs",{
-        data:"partials/template",
-        heading:"Template",
-        user:username
-    });
-});
-app.get("/contact",(req,res)=>{
-    res.render("index.ejs",{
-        data:"partials/contact",
-        heading:"Contact Us",
-        user:username
-    });
-});
-app.get("/about",(req,res)=>{
-    res.render("index.ejs",{
-        data:"partials/about",
-        heading:"About",
-        user:username
-    });
-});
-
-let posts;
-app.get("/blog",async(req,res)=>{
-    try{
-        const result = await db.query("SELECT * FROM posts WHERE username = $1 ORDER BY id ASC;",
-            [username]
-        );
-        // console.log(result.rows);
-        if(result.rows.length > 0){
-            posts = true;
-        }else{
-            posts = false;
-        }
-        res.render("index.ejs",{
-            data:"templates/blog",
-            heading:"Create Your Blog",
-            posts:posts,
-            dbdata:result.rows,
-            user:username
-        });
-    }catch(err){
-        // res.render("index.ejs",{
-        //     data:"templates/blog",
-        //     heading:"Create Your Blog",
-        //     posts:posts,
-        //     user:username
-        // });
-        console.log(err);
-    }
-});
-
-app.get("/post",(reqs,res)=>{
-    res.render("index.ejs",{
-        data:"templates/post",
-        heading:"Add a Post",
-        user:username
-    });
-});
-
 app.post("/insert",async(req,res)=>{
     // console.log(req.body);
     const src = req.body.postSource;
@@ -217,7 +233,7 @@ app.post("/insert",async(req,res)=>{
         // console.log(username);
         if(src === "add"){
             await db.query("INSERT INTO posts (username,title,para,author) VALUES($1,$2,$3,$4);",
-                [username,title,para,author]
+                [user_name,title,para,author]
             );
         }else{
             // console.log(src);
@@ -243,7 +259,7 @@ app.post("/update",async(req,res)=>{
                 heading:"Edit Post",
                 data:"templates/post",
                 content:result.rows[0],
-                user:username
+                user:user_name
             });
         }else{
             console.log(req.body.delete);
@@ -261,7 +277,7 @@ app.post("/host",async(req,res)=>{
     try{
         // console.log(username);
         const result = await db.query("SELECT * FROM posts WHERE username = $1",
-            [username]
+            [user_name]
         );
         const info = result.rows;
 
@@ -280,7 +296,7 @@ app.post("/host",async(req,res)=>{
             info.forEach(async(post)=>{
                 try{
                     await db.query("INSERT INTO sitedata (siteid,username,title,para,author) VALUES($1,$2,$3,$4,$5);",
-                        [siteId,username,post.title,post.para,post.author]
+                        [siteId,user_name,post.title,post.para,post.author]
                     );
                 }catch(err){
                     console.log(err);
@@ -288,11 +304,11 @@ app.post("/host",async(req,res)=>{
             });
             // site me insert kra diya
             await db.query("INSERT INTO sites (username,siteid) VALUES($1,$2)",
-                [username,siteId]
+                [user_name,siteId]
             );
             // posts se data nikal diya
             await db.query("DELETE FROM posts WHERE username = $1",
-                [username]
+                [user_name]
             );
             res.redirect("/dashboard");
         }else{
@@ -300,7 +316,7 @@ app.post("/host",async(req,res)=>{
                 data:"templates/blog",
                 heading:"Create Your Blog",
                 posts:posts,
-                user:username,
+                user:user_name,
                 mesg:"Nothing to host"
             });
         }
@@ -355,8 +371,8 @@ app.post("/sendinfo",(req,res)=>{
     const {name,email,message} = req.body;
     // console.log(email);
     // console.log(message);
-    const token = "6791340636:AAH6-alxaDryuy0pJo71WGlAHNay6O9X4WQ";
-    const chatid = 5421121605;
+    const token = process.env.Token;
+    const chatid = process.env.ChatId;
     const bot = new TelegramBot(token, { polling: true });
     const telegramMessage = `
         New Contact Form Submission:
@@ -367,17 +383,25 @@ app.post("/sendinfo",(req,res)=>{
 
     // Send the message to the specified chat ID
     bot.sendMessage(chatid, telegramMessage)
-        .then(() => {
-            res.render("index.ejs",{
-                data:"partials/contact",
-                heading:"Contact Us",
-                user:username,
-                retext:"Message Sent"
-            });
-        })
-        .catch((error) => {
-            res.status(500).send(error.toString());
+    .then(() => {
+        res.render("index.ejs",{
+            data:"partials/contact",
+            heading:"Contact Us",
+            user:user_name,
+            retext:"Message Sent"
         });
+    })
+    .catch((error) => {
+        res.status(500).send(error.toString());
+    });
+});
+
+passport.serializeUser((user, cb) => {
+    cb(null, user);
+});
+
+passport.deserializeUser((user, cb) => {
+    cb(null, user);
 });
 
 app.listen(port,()=>{
