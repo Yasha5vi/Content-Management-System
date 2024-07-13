@@ -1,12 +1,12 @@
 <div class="content">
     <% if(posts) {%>
         <h2>Current posts</h2>
-        <div class="dash my-5">
+        <div class="dash">
             <%dbdata.forEach((post)=>{%>
                 <div class="postcard">
                     <div class="cardpost">
                         <p>Title : <%=post.title%></p>
-                        <p>Body : <%=post.para%></p>
+                        <p class="cont">Body : <%=post.para%></p>
                         <p>Author : <%=post.author%></p>
                     </div>
                     <div class = "editdelete">

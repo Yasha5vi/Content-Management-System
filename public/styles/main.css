@@ -69,7 +69,9 @@ p{
     border-radius: 20px;
     margin-bottom: 50px;
     /* height: 100%; */
-
+}
+.cont{
+    height: fit-content;
 }
 .editdelete{
     display: flex;
