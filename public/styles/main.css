@@ -185,7 +185,7 @@ img{
     border-radius: 20px;
     width: 40%;
     background-color: white;
-    
+    box-shadow: 0 0 20px 0 #808080;
 }
 .formlogin{
     display: flex;
